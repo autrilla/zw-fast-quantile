@@ -141,7 +141,7 @@ where
         self.s[0].push(rank_info);
 
         self.cnt += 1;
-        if self.s[0].len() < self.b {
+        if self.s[0].len() <= self.b {
             return;
         }
 
@@ -738,5 +738,20 @@ mod tests {
 
         let quantile_estimated = s.query(1.0);
         assert!((quantile_estimated - records[n - 1]).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_update_exactly_block_size() {
+        let n = 400;
+        let epsilon = 0.01;
+        let mut s = FixedSizeEpsilonSummary::new(n, epsilon);
+        let block_size = s.b;
+        for i in 0..block_size {
+            s.update(i);
+        }
+
+        assert_eq!(s.query(0.0), 0);
+        assert_eq!(s.query(0.5), block_size / 2);
+        assert_eq!(s.query(1.0), block_size - 1);
     }
 }
